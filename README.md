@@ -111,3 +111,4 @@ CI checks include
 The workflow is designed to avoid failures caused by missing model artifacts during CI runs.
 
 ## App Screanshot
+![Picture](LoanDefault.PNG)
