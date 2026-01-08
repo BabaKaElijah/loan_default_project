@@ -8,17 +8,14 @@ from src.components.predict_pipeline import PredictPipeline
 logger = get_logger(__name__)
 
 app = Flask(__name__)
-pipeline = None  # Lazy load pipeline
+pipeline = None  # Will be loaded lazily
 
-
-@app.before_first_request
 def load_pipeline():
-    """Load the model pipeline when the first request comes in, unless CI skips it."""
+    """Load model pipeline unless CI skips it."""
     global pipeline
     if pipeline is not None:
         return
 
-    # Skip loading pipeline in CI to avoid missing artifacts
     if os.getenv("SKIP_PIPELINE_LOAD") == "true":
         logger.info("Skipping pipeline load (CI mode)")
         return
@@ -32,17 +29,20 @@ def load_pipeline():
 
 @app.route("/")
 def home():
+    load_pipeline()  # Ensure pipeline is loaded before serving home page
     return render_template("index.html")
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    try:
-        if pipeline is None:
-            return jsonify({
-                "error": "Model pipeline not loaded"
-            }), 503
+    load_pipeline()  # Ensure pipeline is loaded
 
+    if pipeline is None:
+        return jsonify({
+            "error": "Model pipeline not loaded"
+        }), 503
+
+    try:
         # Get input data from JSON or form
         if request.is_json:
             input_data = request.get_json()
@@ -71,4 +71,5 @@ def predict():
 
 
 if __name__ == "__main__":
+    load_pipeline()  # Load pipeline when running locally
     app.run(host="0.0.0.0", port=5000, debug=True)
