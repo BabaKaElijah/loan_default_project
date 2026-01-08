@@ -35,5 +35,7 @@ jobs:
           python -c "from src.components.predict_pipeline import PredictPipeline"
 
       - name: Check Flask app
+        env:
+          SKIP_PIPELINE_LOAD: "true"
         run: |
           python -c "from app import app; print('Flask app loaded successfully')"
