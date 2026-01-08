@@ -112,3 +112,8 @@ The workflow is designed to avoid failures caused by missing model artifacts dur
 
 ## App Screanshot
 ![Picture](LoanDefault.PNG)
+
+## Author
+Ellias Sithole
+Machine Learning and Data Enthusiast
+
