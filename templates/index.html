@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Default Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/style.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+    <h2 class="mb-4">Loan Default Predictor</h2>
+    <form id="loan-form">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="Age" class="form-label">Age</label>
+                <input type="number" class="form-control" id="Age" name="Age" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="Income" class="form-label">Income</label>
+                <input type="number" class="form-control" id="Income" name="Income" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="LoanAmount" class="form-label">Loan Amount</label>
+                <input type="number" class="form-control" id="LoanAmount" name="LoanAmount" required>
+            </div>
+        </div>
+
+        <!-- Add other inputs similarly -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="CreditScore" class="form-label">Credit Score</label>
+                <input type="number" class="form-control" id="CreditScore" name="CreditScore" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="MonthsEmployed" class="form-label">Months Employed</label>
+                <input type="number" class="form-control" id="MonthsEmployed" name="MonthsEmployed" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="NumCreditLines" class="form-label">Number of Credit Lines</label>
+                <input type="number" class="form-control" id="NumCreditLines" name="NumCreditLines" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="InterestRate" class="form-label">Interest Rate</label>
+                <input type="number" step="0.01" class="form-control" id="InterestRate" name="InterestRate" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="LoanTerm" class="form-label">Loan Term (months)</label>
+                <input type="number" class="form-control" id="LoanTerm" name="LoanTerm" required>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="DTIRatio" class="form-label">DTI Ratio</label>
+                <input type="number" step="0.01" class="form-control" id="DTIRatio" name="DTIRatio" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="Education" class="form-label">Education</label>
+                <select class="form-select" id="Education" name="Education">
+                    <option>Bachelor</option>
+                    <option>Master</option>
+                    <option>High School</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="EmploymentType" class="form-label">Employment Type</label>
+                <select class="form-select" id="EmploymentType" name="EmploymentType">
+                    <option>Salaried</option>
+                    <option>Self-Employed</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="MaritalStatus" class="form-label">Marital Status</label>
+                <select class="form-select" id="MaritalStatus" name="MaritalStatus">
+                    <option>Single</option>
+                    <option>Married</option>
+                    <option>Divorced</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="HasMortgage" class="form-label">Has Mortgage</label>
+                <select class="form-select" id="HasMortgage" name="HasMortgage">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="HasDependents" class="form-label">Has Dependents</label>
+                <select class="form-select" id="HasDependents" name="HasDependents">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="LoanPurpose" class="form-label">Loan Purpose</label>
+                <select class="form-select" id="LoanPurpose" name="LoanPurpose">
+                    <option>Car</option>
+                    <option>Home</option>
+                    <option>Education</option>
+                    <option>Other</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="HasCoSigner" class="form-label">Has Co-Signer</label>
+                <select class="form-select" id="HasCoSigner" name="HasCoSigner">
+                    <option>Yes</option>
+                    <option>No</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Predict</button>
+    </form>
+
+    <div id="result" class="mt-4"></div>
+
+    <script>
+        const form = document.getElementById('loan-form');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const inputData = Object.fromEntries(formData.entries());
+
+            // Convert numeric fields
+            ["Age","Income","LoanAmount","CreditScore","MonthsEmployed",
+             "NumCreditLines","InterestRate","LoanTerm","DTIRatio"].forEach(f=>{
+                inputData[f] = parseFloat(inputData[f]);
+             });
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(inputData)
+            });
+
+            const result = await response.json();
+
+            document.getElementById('result').innerHTML = `
+                <h4>Prediction Result</h4>
+                <p><strong>Prediction:</strong> ${result.prediction}</p>
+                <p><strong>Probability:</strong> ${(result.probability*100).toFixed(2)}%</p>
+            `;
+        });
+    </script>
+</body>
+</html>

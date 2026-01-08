@@ -1,0 +1,36 @@
+data:
+  raw_data_path: data/raw/loan_default.csv
+  train_data_path: artifacts/train.csv
+  test_data_path: artifacts/test.csv
+  test_size: 0.2
+  random_state: 42
+
+preprocessing:
+  target_column: Default
+
+  drop_columns:
+    - LoanID
+
+  numerical_features:
+    - Age
+    - Income
+    - LoanAmount
+    - CreditScore
+    - MonthsEmployed
+    - NumCreditLines
+    - InterestRate
+    - LoanTerm
+    - DTIRatio
+
+  categorical_features:
+    - Education
+    - EmploymentType
+    - MaritalStatus
+    - HasMortgage
+    - HasDependents
+    - LoanPurpose
+    - HasCoSigner
+
+model:
+  model_dir: artifacts/model
+  preprocessor_dir: artifacts/preprocessor
