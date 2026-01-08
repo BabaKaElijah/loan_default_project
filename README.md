@@ -71,4 +71,43 @@ Automated checks on every push and pull request.
 python -m venv venv
 venv\Scripts\activate
 ```
+### Install dependencies
+```bash
+pip install -r requirements.txt
+```
+### Run training pipeline
+```bash
+python -m src.pipelines.train_pipeline
+```
+### Run Flask app
+```bash
+python app.py
+```
+Open in browser
+```bash
+http://127.0.0.1:5000
+```
+### Run Streamlit app
+```bash
+streamlit run streamlit_app.py
+```
+## Docker Usage
+### Build Docker image
+```bash
+docker build -t loan-default-app .
+```
+### Run Docker container
+```bash
+docker run -p 5000:5000 loan-default-app
+```
 
+## CI and GitHub Actions
+This project includes a GitHub Actions CI workflow that runs on every push and pull request.
+
+CI checks include
+- Dependency installation
+- Core module import validation
+- Flask app load verification
+The workflow is designed to avoid failures caused by missing model artifacts during CI runs.
+
+## App Screanshot
