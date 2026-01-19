@@ -40,7 +40,7 @@ class DataTransformation:
             preprocessor = ColumnTransformer(
                 transformers=[
                     ("num", StandardScaler(), num_features),
-                    ("cat", OneHotEncoder(handle_unknown="ignore"), cat_features)
+                    ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features)
                 ]
             )
 
