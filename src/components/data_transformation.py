@@ -47,8 +47,9 @@ class DataTransformation:
             X_train_transformed = preprocessor.fit_transform(X_train)
             X_test_transformed = preprocessor.transform(X_test)
 
-            os.makedirs("artifacts/preprocessor", exist_ok=True)
-            preprocessor_path = "artifacts/preprocessor/preprocessor.pkl"
+            preprocessor_dir = self.config["model"]["preprocessor_dir"]
+            os.makedirs(preprocessor_dir, exist_ok=True)
+            preprocessor_path = os.path.join(preprocessor_dir, "preprocessor.pkl")
             joblib.dump(preprocessor, preprocessor_path)
 
             logger.info("Data transformation completed successfully")
