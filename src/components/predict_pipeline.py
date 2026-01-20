@@ -20,9 +20,15 @@ class PredictPipeline:
                 raise FileNotFoundError("No model pipeline found")
 
             if len(model_files) > 1:
-                logger.warning("Multiple model pipelines found. Using the first one.")
+                logger.warning("Multiple model pipelines found. Using the most recent one.")
 
-            model_path = os.path.join(model_dir, model_files[0])
+            model_candidates = []
+            for filename in model_files:
+                path = os.path.join(model_dir, filename)
+                model_candidates.append((os.path.getmtime(path), filename, path))
+
+            model_candidates.sort()
+            _, _, model_path = model_candidates[-1]
             logger.info(f"Loading model pipeline from {model_path}")
 
             self.model = joblib.load(model_path)

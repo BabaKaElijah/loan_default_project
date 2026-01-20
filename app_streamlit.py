@@ -6,7 +6,12 @@ st.set_page_config(page_title="Loan Default Predictor", layout="centered")
 
 st.title("Loan Default Prediction")
 
-pipeline = PredictPipeline()
+pipeline = None
+load_error = None
+try:
+    pipeline = PredictPipeline()
+except Exception as e:
+    load_error = str(e)
 
 st.header("Applicant Information")
 
@@ -30,25 +35,32 @@ has_dependents = st.selectbox("Has Dependents", ["Yes", "No"])
 loan_purpose = st.selectbox("Loan Purpose", ["Car", "Home Improvement", "Business", "Education", "Other"])
 has_cosigner = st.selectbox("Has Co-Signer", ["Yes", "No"])
 
-if st.button("Predict"):
-    input_data = {
-        "Age": age,
-        "Income": income,
-        "LoanAmount": loan_amount,
-        "CreditScore": credit_score,
-        "MonthsEmployed": months_employed,
-        "NumCreditLines": num_credit_lines,
-        "InterestRate": interest_rate,
-        "LoanTerm": loan_term,
-        "DTIRatio": dti_ratio,
-        "Education": education,
-        "EmploymentType": employment_type,
-        "MaritalStatus": marital_status,
-        "HasMortgage": has_mortgage,
-        "HasDependents": has_dependents,
-        "LoanPurpose": loan_purpose,
-        "HasCoSigner": has_cosigner
-    }
+if load_error:
+    st.warning("Model artifacts are missing or could not be loaded.")
+    st.caption(load_error)
 
-    result = pipeline.predict(input_data)
-    st.success(f"Prediction: {result['prediction']} | Probability of default: {result['probability']:.2f}")
+if st.button("Predict"):
+    if pipeline is None:
+        st.error("Model pipeline is not available. Please train the model first.")
+    else:
+        input_data = {
+            "Age": age,
+            "Income": income,
+            "LoanAmount": loan_amount,
+            "CreditScore": credit_score,
+            "MonthsEmployed": months_employed,
+            "NumCreditLines": num_credit_lines,
+            "InterestRate": interest_rate,
+            "LoanTerm": loan_term,
+            "DTIRatio": dti_ratio,
+            "Education": education,
+            "EmploymentType": employment_type,
+            "MaritalStatus": marital_status,
+            "HasMortgage": has_mortgage,
+            "HasDependents": has_dependents,
+            "LoanPurpose": loan_purpose,
+            "HasCoSigner": has_cosigner
+        }
+
+        result = pipeline.predict(input_data)
+        st.success(f"Prediction: {result['prediction']} | Probability of default: {result['probability']:.2f}")
