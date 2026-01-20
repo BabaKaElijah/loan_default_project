@@ -1,14 +1,17 @@
-import sys
 import os
-from flask import Flask, request, jsonify, render_template
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from fastapi.templating import Jinja2Templates
 
 from src.logger.logger import get_logger
 from src.components.predict_pipeline import PredictPipeline
 
 logger = get_logger(__name__)
 
-app = Flask(__name__)
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
 pipeline = None  # Will be loaded lazily
+
 
 def load_pipeline():
     """Load model pipeline unless CI skips it."""
@@ -27,27 +30,29 @@ def load_pipeline():
         logger.error(f"Failed to load model pipeline: {str(e)}")
 
 
-@app.route("/")
-def home():
+@app.get("/")
+def home(request: Request):
     load_pipeline()  # Ensure pipeline is loaded before serving home page
-    return render_template("index.html")
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
-@app.route("/predict", methods=["POST"])
-def predict():
+@app.post("/predict")
+async def predict(request: Request):
     load_pipeline()  # Ensure pipeline is loaded
 
     if pipeline is None:
-        return jsonify({
-            "error": "Model pipeline not loaded"
-        }), 503
+        return JSONResponse(
+            {"error": "Model pipeline not loaded"},
+            status_code=503
+        )
 
     try:
-        # Get input data from JSON or form
-        if request.is_json:
-            input_data = request.get_json()
+        input_data = {}
+        if request.headers.get("content-type", "").startswith("application/json"):
+            input_data = await request.json()
         else:
-            input_data = request.form.to_dict()
+            form_data = await request.form()
+            input_data = dict(form_data)
             numeric_fields = [
                 "Age", "Income", "LoanAmount", "CreditScore", "MonthsEmployed",
                 "NumCreditLines", "InterestRate", "LoanTerm", "DTIRatio"
@@ -58,18 +63,11 @@ def predict():
 
         result = pipeline.predict(input_data)
 
-        return jsonify({
+        return JSONResponse({
             "prediction": result["prediction"],
             "probability": result["probability"]
         })
 
     except Exception as e:
         logger.error(f"Prediction failed: {str(e)}")
-        return jsonify({
-            "error": str(e)
-        }), 500
-
-
-if __name__ == "__main__":
-    load_pipeline()  # Load pipeline when running locally
-    app.run(host="0.0.0.0", port=5000, debug=True)
+        return JSONResponse({"error": str(e)}, status_code=500)
